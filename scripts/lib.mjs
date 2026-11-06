@@ -6,7 +6,7 @@
  * part of the schema names another.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -55,7 +55,7 @@ export function loadDotEnv(envPath) {
 
 export function loadSchema(path = process.env.SCHEMA_PATH ? resolve(process.cwd(), process.env.SCHEMA_PATH) : resolve(ROOT, 'schema.json')) {
   if (!existsSync(path)) {
-    console.error(`\n✗ ${path} not found. Start from the starter:\n\n  cp schema.starter.json schema.json\n`)
+    console.error(`\n✗ ${path} not found. Choose your trackers first:\n\n  npm run trackers\n`)
     process.exit(1)
   }
   return JSON.parse(readFileSync(path, 'utf8'))
@@ -262,4 +262,75 @@ export function setEnv(key, value, envPath = resolve(ROOT, '.env')) {
   if (next !== text) writeFileSync(envPath, next)
   process.env[key] = value
   return next !== text
+}
+
+// -------------------------------------------------------------- trackers ----
+
+/**
+ * The tracker menu: trackers/base.json (routing and the system tables) plus
+ * one file per tracker a new install can pick. Picking copies the tracker into
+ * your schema.json, which is yours from then on; the menu is only where it
+ * started.
+ */
+export const TRACKERS_DIR = resolve(ROOT, 'trackers')
+
+export function trackerMenu(dir = TRACKERS_DIR) {
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.json') && f !== 'base.json')
+    .flatMap((f) => {
+      let item
+      try {
+        item = JSON.parse(readFileSync(resolve(dir, f), 'utf8'))
+      } catch {
+        return []
+      }
+      // A file in some other shape (a table copied in by hand) is not a menu item.
+      return item?.table?.key && item.table.name ? [{ id: f.slice(0, -5), ...item }] : []
+    })
+    .sort((a, b) => Number(Boolean(b.suggested)) - Number(Boolean(a.suggested)) || (a.order ?? Infinity) - (b.order ?? Infinity) || a.id.localeCompare(b.id))
+}
+
+const isSystem = (t) => !t.operations?.length
+
+/**
+ * schema.json with these menu trackers added (any already there are left
+ * alone). A reminder of a kind the schema already has is kept as it was, and
+ * reported in `skippedReminders`: there is one of each kind.
+ */
+export function addTrackers(schema, items) {
+  const out = structuredClone(schema)
+  const added = []
+  const skippedReminders = []
+  for (const item of items) {
+    if (out.tables.some((t) => t.key === item.table.key)) continue
+    // Trackers first, system tables last: the order the app lists them.
+    const at = out.tables.findIndex(isSystem)
+    out.tables.splice(at === -1 ? out.tables.length : at, 0, structuredClone(item.table))
+    for (const [kind, config] of Object.entries(item.reminders ?? {})) {
+      out.reminders ??= {}
+      if (!out.reminders[kind]) out.reminders[kind] = structuredClone(config)
+      else skippedReminders.push({ tracker: item.table.name, kind, keptFor: out.reminders[kind].table })
+    }
+    added.push(item.table.name)
+  }
+  return { schema: out, added, skippedReminders }
+}
+
+/** A fresh schema.json from the base and these menu trackers. */
+export function composeSchema(items, dir = TRACKERS_DIR) {
+  const base = JSON.parse(readFileSync(resolve(dir, 'base.json'), 'utf8'))
+  return addTrackers(base, items).schema
+}
+
+/** schema.json without these trackers, and without any reminder that pointed at them. */
+export function removeTrackers(schema, keys) {
+  const out = structuredClone(schema)
+  const gone = out.tables.filter((t) => keys.includes(t.key) && !isSystem(t))
+  out.tables = out.tables.filter((t) => !gone.includes(t))
+  for (const [kind, config] of Object.entries(out.reminders ?? {})) {
+    const ref = String(config?.table ?? '').toLowerCase()
+    if (gone.some((t) => t.key.toLowerCase() === ref || t.name.toLowerCase() === ref)) delete out.reminders[kind]
+  }
+  if (out.reminders && !Object.keys(out.reminders).length) delete out.reminders
+  return { schema: out, removed: gone.map((t) => t.name) }
 }

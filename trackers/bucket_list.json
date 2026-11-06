@@ -1,0 +1,60 @@
+{
+  "about": "Things to do someday, ticked off when they happen.",
+  "suggested": false,
+  "order": 6,
+  "table": {
+    "key": "bucket_list",
+    "name": "Bucket List",
+    "description": "Things to do before you die, ticked off as they happen.",
+    "operations": [
+      "create",
+      "update"
+    ],
+    "vocabulary": [
+      "bucket list",
+      "bucket-list",
+      "my bucket list",
+      "add to my bucket list",
+      "someday i want to",
+      "before i die"
+    ],
+    "roles": {
+      "title": "Item",
+      "notes": "Notes"
+    },
+    "candidateFields": [
+      "Item",
+      "Done"
+    ],
+    "candidateLimit": 100,
+    "lifecycleFields": [
+      "Done",
+      "Done On"
+    ],
+    "conventions": [
+      "Item is the thing itself in a few words, in their words: 'See the northern lights', 'Hike the Camino', not 'Bucket list item about travel'.",
+      "One recording can add several items: 'bucket list: skydiving, learn to surf, see Petra' is three creates.",
+      "When they say they did one ('I finally saw the northern lights, check it off'), update that existing item with Done = true and Done On = the recording's date. Never add a second copy of something already on the list.",
+      "Anything extra they say about an item (why, with whom, when) goes in Notes."
+    ],
+    "fields": [
+      {
+        "name": "Item",
+        "type": "singleLineText",
+        "description": "PRIMARY. The thing itself, in a few words."
+      },
+      {
+        "name": "Notes",
+        "type": "multilineText"
+      },
+      {
+        "name": "Done",
+        "type": "checkbox"
+      },
+      {
+        "name": "Done On",
+        "type": "date"
+      }
+    ]
+  }
+}

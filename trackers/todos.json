@@ -1,0 +1,67 @@
+{
+  "about": "Tasks with deadlines. A 9am Telegram digest of what's overdue or due soon, with a ✓ button on each; say \"I did X\" to tick one off.",
+  "suggested": true,
+  "order": 2,
+  "table": {
+    "key": "todos",
+    "name": "To-Dos",
+    "operations": [
+      "create",
+      "update"
+    ],
+    "vocabulary": [
+      "todo",
+      "todos",
+      "todo list",
+      "to do list",
+      "to-dos",
+      "task",
+      "tasks",
+      "remind me to"
+    ],
+    "roles": {
+      "title": "Title",
+      "notes": "Notes",
+      "due": "Due Date",
+      "done": "Done"
+    },
+    "lifecycleFields": [
+      "Due Date",
+      "Done"
+    ],
+    "fields": [
+      {
+        "name": "Title",
+        "type": "singleLineText",
+        "description": "PRIMARY. The task, as a short imperative."
+      },
+      {
+        "name": "Notes",
+        "type": "multilineText"
+      },
+      {
+        "name": "Due Date",
+        "type": "date"
+      },
+      {
+        "name": "Done",
+        "type": "checkbox",
+        "options": {
+          "color": "greenBright",
+          "icon": "check"
+        }
+      }
+    ],
+    "candidateFields": [
+      "Title",
+      "Due Date",
+      "Done"
+    ],
+    "candidateLimit": 50,
+    "candidateSort": "Due Date",
+    "conventions": [
+      "Due Date is a plain date. Turn what they said into one using the recording's date: 'by Friday' is the coming Friday, 'tomorrow' is the day after the recording. Leave it empty when no deadline was said.",
+      "When they say a task is finished ('I called the insurance company', 'mark the flights done'), update that existing to-do with Done = true. Never create a new to-do for something already on the list."
+    ]
+  }
+}

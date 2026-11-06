@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 3,
+  "description": "Voice capture from a Pocket recorder, routed into your own trackers.",
+  "_comment_routing": "Pocket records everything - meetings, calls, pocket-dials. A recording that never addressed the system is dropped. confirmIgnoreBelow is how sure the planner must be that a recording was NOT meant for the system before dropping it silently; below that it asks over Telegram first. Set it high and every stray recording pings you until you stop reading the pings, which loses the real ones too. Set it low and a genuine capture disappears with no trace. minConfidenceToWrite is the separate question of how sure it must be about WHERE something goes.",
+  "routing": {
+    "ignoreBelowConfidence": 0.4,
+    "minConfidenceToWrite": 0.7,
+    "allowNewSelectChoices": false,
+    "confirmIgnoreBelow": 0.8,
+    "confirmIgnoreAboveChars": 500,
+    "confirmIgnoreBelowWhenLong": 0.92
+  },
+  "_comment_corrections": "Only fields the planner actually wrote are correction candidates, minus lifecycle fields - otherwise checking off a todo teaches the planner to mark new todos done. Routing and classification edits are the signal; using your own database is not.",
+  "corrections": {
+    "maxAgeDays": 30
+  },
+  "_comment_base": "Shared by every install: routing and the system tables the Worker writes to. Your trackers are added from the menu in trackers/ (npm run trackers), or written by hand. See SETUP.md, Step 4.",
+  "tables": [
+    {
+      "key": "capture_log",
+      "name": "Capture Log",
+      "description": "One row per Pocket recording the system acted on: the dedupe record, the audit trail, and the Review queue in one place.",
+      "operations": [],
+      "fields": [
+        {
+          "name": "Recording ID",
+          "type": "singleLineText",
+          "description": "PRIMARY. Pocket's recording id. Dedupe key - webhook delivery is at-least-once."
+        },
+        {
+          "name": "Raw Transcript",
+          "type": "multilineText",
+          "description": "Verbatim, never edited. Any bad write is recoverable by re-running the planner over this."
+        },
+        {
+          "name": "Recorded At",
+          "type": "dateTime"
+        },
+        {
+          "name": "Status",
+          "type": "singleSelect",
+          "description": "Needs review, Unrouted and Failed are the app's Review queue. Ignored rows are recordings that never addressed the system.",
+          "options": {
+            "choices": [
+              {
+                "name": "Written",
+                "color": "greenBright"
+              },
+              {
+                "name": "Needs review",
+                "color": "yellowBright"
+              },
+              {
+                "name": "Unrouted",
+                "color": "orangeBright"
+              },
+              {
+                "name": "Ignored",
+                "color": "grayBright"
+              },
+              {
+                "name": "Failed",
+                "color": "redBright"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Operation",
+          "type": "singleSelect",
+          "options": {
+            "choices": [
+              {
+                "name": "create"
+              },
+              {
+                "name": "append"
+              },
+              {
+                "name": "update"
+              },
+              {
+                "name": "none"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Target Table",
+          "type": "singleLineText"
+        },
+        {
+          "name": "Target Record ID",
+          "type": "singleLineText",
+          "description": "The row this recording created or appended to."
+        },
+        {
+          "name": "Planner Output",
+          "type": "multilineText",
+          "description": "JSON the planner emitted. Diffed nightly against the target row to detect manual corrections."
+        },
+        {
+          "name": "Field Snapshot",
+          "type": "multilineText",
+          "description": "What was actually written, per target record. The nightly sweep diffs the live record against this to spot edits made by hand; after recording them it rewrites the snapshot, so each edit is learned once rather than re-detected forever. Planner Output stays the untouched audit record."
+        },
+        {
+          "name": "Swept At",
+          "type": "dateTime",
+          "description": "When the correction sweep last diffed this row. Sorting by it ascending rotates the sweep through every row instead of re-checking the newest few forever - blanks sort first, so a row is never checked twice before every other row has been checked once."
+        },
+        {
+          "name": "Confidence",
+          "type": "number",
+          "options": {
+            "precision": 2
+          }
+        },
+        {
+          "name": "Reason",
+          "type": "singleSelect",
+          "description": "'Unknown classifier' means a tracker was named that does not exist - not that the recording had no classifier, which is dropped.",
+          "options": {
+            "choices": [
+              {
+                "name": "Low confidence"
+              },
+              {
+                "name": "Unknown classifier"
+              },
+              {
+                "name": "Ambiguous target"
+              },
+              {
+                "name": "Write failed"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Proposed Action",
+          "type": "multilineText",
+          "description": "The operation the planner would have run. Approving replays this, so triage is a click not a retype."
+        },
+        {
+          "name": "Redo",
+          "type": "checkbox",
+          "description": "Tick to re-file this recording on the next poll. Put a table name in Target Table first to force where it goes; leave it blank to let the planner decide again. Cleared automatically once re-filed.",
+          "options": {
+            "color": "blueBright",
+            "icon": "flag"
+          }
+        },
+        {
+          "name": "Resolved",
+          "type": "checkbox",
+          "options": {
+            "color": "greenBright",
+            "icon": "check"
+          }
+        }
+      ]
+    },
+    {
+      "key": "corrections",
+      "name": "Corrections",
+      "description": "Every correction, however it arrived. The most recent rows go into the planner prompt as few-shot examples.",
+      "operations": [],
+      "fields": [
+        {
+          "name": "Summary",
+          "type": "singleLineText",
+          "description": "PRIMARY."
+        },
+        {
+          "name": "Source",
+          "type": "singleSelect",
+          "description": "Manual edits are the most informative and the easiest to miss - the nightly diff exists to catch them.",
+          "options": {
+            "choices": [
+              {
+                "name": "Voice",
+                "color": "purpleBright"
+              },
+              {
+                "name": "Notification",
+                "color": "blueBright"
+              },
+              {
+                "name": "Manual edit",
+                "color": "orangeBright"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Source Table",
+          "type": "singleLineText"
+        },
+        {
+          "name": "Source Record ID",
+          "type": "singleLineText"
+        },
+        {
+          "name": "Field",
+          "type": "singleLineText"
+        },
+        {
+          "name": "Original Value",
+          "type": "multilineText"
+        },
+        {
+          "name": "Corrected Value",
+          "type": "multilineText"
+        },
+        {
+          "name": "Raw Transcript",
+          "type": "multilineText",
+          "description": "The utterance that produced the original write, without which the example makes no sense."
+        },
+        {
+          "name": "Detected At",
+          "type": "dateTime"
+        },
+        {
+          "name": "Use As Example",
+          "type": "checkbox",
+          "description": "Uncheck to keep a correction out of the planner prompt.",
+          "options": {
+            "color": "greenBright",
+            "icon": "check"
+          }
+        }
+      ]
+    },
+    {
+      "key": "meta",
+      "name": "Pocket Meta",
+      "description": "System state. Key/value so the Worker can stay stateless.",
+      "operations": [],
+      "fields": [
+        {
+          "name": "Key",
+          "type": "singleLineText",
+          "description": "PRIMARY."
+        },
+        {
+          "name": "Value",
+          "type": "multilineText"
+        },
+        {
+          "name": "Updated At",
+          "type": "dateTime"
+        }
+      ]
+    }
+  ]
+}

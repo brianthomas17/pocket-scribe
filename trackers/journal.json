@@ -1,0 +1,70 @@
+{
+  "about": "Daily entries and gratitudes, one row a day. A year later, that day's entry comes back on Telegram.",
+  "suggested": true,
+  "order": 1,
+  "reminders": {
+    "onThisDay": {
+      "table": "journal",
+      "dateField": "Date",
+      "years": [
+        1
+      ]
+    }
+  },
+  "table": {
+    "key": "journal",
+    "name": "Journal",
+    "operations": [
+      "create",
+      "update"
+    ],
+    "vocabulary": [
+      "journal",
+      "journal entry",
+      "journaling",
+      "log this",
+      "diary",
+      "gratitude",
+      "gratitudes",
+      "grateful for",
+      "three gratitudes"
+    ],
+    "roles": {
+      "body": "Journal",
+      "date": "Date",
+      "gratitudes": "Gratitudes"
+    },
+    "resolveBy": [
+      "Date"
+    ],
+    "candidateLimit": 10,
+    "candidateSort": "Date",
+    "_comment_candidateFields": "Shown to the planner alongside each candidate so an update can merge rather than clobber - it needs to see the gratitudes already on today's row before rewriting the field.",
+    "candidateFields": [
+      "Date",
+      "Journal",
+      "Gratitudes"
+    ],
+    "conventions": [
+      "Gratitudes go one per line in the Gratitudes field, no numbering or bullets - just the things. Record only what they actually said; never invent one to round out a list.",
+      "Gratitudes are often recorded on their own ('Gratitudes. Coffee, the walk this morning, a friend calling') rather than inside a full entry. That is still this table.",
+      "One row per day. If a Journal record already exists for the recording's date, update that record instead of creating a second one - a gratitudes recording in the evening belongs on the same row as the morning's entry. Only set the fields this recording actually provides; never overwrite a field it says nothing about.",
+      "When updating a row that already has Gratitudes, include the existing ones alongside the new - an update replaces the field wholesale."
+    ],
+    "fields": [
+      {
+        "name": "Date",
+        "type": "date",
+        "description": "PRIMARY. One row per day."
+      },
+      {
+        "name": "Journal",
+        "type": "multilineText"
+      },
+      {
+        "name": "Gratitudes",
+        "type": "richText"
+      }
+    ]
+  }
+}

@@ -16,3 +16,4 @@ schema.json
 wrangler.jsonc
 wrangler.app.jsonc
 schema.from-backup.json
+schema.backup-*.json

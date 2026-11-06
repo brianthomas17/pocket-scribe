@@ -1,0 +1,75 @@
+{
+  "about": "Lessons from trips and events. For one that happens every year, they come back on Telegram a month before you go again.",
+  "suggested": false,
+  "order": 5,
+  "reminders": {
+    "events": {
+      "table": "Adventure Learnings",
+      "eventField": "Event",
+      "nameField": "Adventure Name",
+      "dateField": "Date",
+      "bodyField": "Learnings",
+      "optInField": "Remind me next year",
+      "monthsAfter": 11
+    }
+  },
+  "table": {
+    "key": "adventures",
+    "name": "Adventure Learnings",
+    "operations": [
+      "append",
+      "create"
+    ],
+    "vocabulary": [
+      "adventure",
+      "adventures",
+      "adventure learnings",
+      "adventure log",
+      "trip notes"
+    ],
+    "appendTarget": "Learnings",
+    "resolveBy": [
+      "Adventure Name"
+    ],
+    "roles": {
+      "date": "Date"
+    },
+    "lifecycleFields": [
+      "Date"
+    ],
+    "fields": [
+      {
+        "name": "Adventure Name",
+        "type": "singleLineText",
+        "description": "PRIMARY. The trip or event, as they name it out loud."
+      },
+      {
+        "name": "Learnings",
+        "type": "richText",
+        "description": "A bulleted list that grows - each recording about this adventure appends one."
+      },
+      {
+        "name": "Event",
+        "type": "singleLineText",
+        "description": "The recurring event this belongs to, without the year: Burning Man 26 → Burning Man. Empty for a one-off."
+      },
+      {
+        "name": "Date",
+        "type": "date"
+      },
+      {
+        "name": "Remind me next year",
+        "type": "checkbox",
+        "options": {
+          "color": "blueBright",
+          "icon": "check"
+        }
+      }
+    ],
+    "conventions": [
+      "One row per adventure. A learning about one that already exists is appended to it, never a new row - match on the name as they said it, allowing for speech-to-text mangling.",
+      "Event names the recurring event an adventure belongs to, without the year: 'Burning Man 26' is Event 'Burning Man'. Reuse an existing Event when it is plausibly the same one; a one-off trip has none.",
+      "Tick Remind me next year for a recurring event, so next year's reminder carries these learnings forward. When creating an adventure under an Event, copy the answer from that Event's previous adventures."
+    ]
+  }
+}

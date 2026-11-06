@@ -14,7 +14,7 @@ import { copyFileSync, existsSync, mkdtempSync, readFileSync, writeFileSync, rmS
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
-import { loadDotEnv, validateSchema, patchConfig, writeConfigs, setEnv, CONFIGS, ROOT } from './lib.mjs'
+import { loadDotEnv, validateSchema, patchConfig, writeConfigs, setEnv, CONFIGS, ROOT, trackerMenu, composeSchema, addTrackers, removeTrackers } from './lib.mjs'
 
 let passed = 0
 const failures = []
@@ -153,9 +153,56 @@ check('schema.json is valid (or not made yet)', () => {
   assert(errs.length === 0, `expected none, got:\n      ${errs.join('\n      ')}`)
 })
 
-check('schema.starter.json is valid', () => {
-  const errs = validateSchema(readJson('schema.starter.json'))
-  assert(errs.length === 0, `expected none, got:\n      ${errs.join('\n      ')}`)
+check('every tracker on the menu makes a valid schema, alone and all together', () => {
+  const menu = trackerMenu()
+  assert(menu.length >= 8, `menu has ${menu.length}`)
+  for (const items of [...menu.map((m) => [m]), menu, menu.filter((m) => m.suggested)]) {
+    const errs = validateSchema(composeSchema(items))
+    assert(errs.length === 0, `${items.map((m) => m.id)}: ${errs.join('; ')}`)
+  }
+})
+
+check('adding a tracker puts it before the system tables and brings its reminder; removing takes both away', () => {
+  const menu = trackerMenu()
+  const journal = menu.find((m) => m.id === 'journal')
+  const adventures = menu.find((m) => m.id === 'adventures')
+  const start = composeSchema([journal])
+  const { schema: more, added } = addTrackers(start, [adventures, journal])
+  assert(added.join() === 'Adventure Learnings', `added ${added}`)
+  assert(more.tables.map((t) => t.key).slice(0, 2).join() === 'journal,adventures', more.tables.map((t) => t.key).join())
+  assert(more.reminders.events && more.reminders.onThisDay, 'reminders not merged')
+  const { schema: less } = removeTrackers(more, ['adventures', 'capture_log'])
+  assert(!less.reminders.events && less.tables.some((t) => t.key === 'capture_log'), 'the reminder stayed, or a system table went')
+  assert(validateSchema(less).length === 0, 'removal left it invalid')
+})
+
+check('a reminder kind already taken is kept, and the skip is reported', () => {
+  const adventures = trackerMenu().find((m) => m.id === 'adventures')
+  const mine = composeSchema([])
+  mine.reminders = { events: { table: 'Trips', eventField: 'Event' } }
+  const { schema, skippedReminders } = addTrackers(mine, [adventures])
+  assert(schema.reminders.events.table === 'Trips', 'the existing reminder was replaced')
+  assert(skippedReminders.length === 1 && skippedReminders[0].kind === 'events' && skippedReminders[0].keptFor === 'Trips', JSON.stringify(skippedReminders))
+})
+
+check('removing a tracker drops a reminder that names it in any case', () => {
+  const journal = trackerMenu().find((m) => m.id === 'journal')
+  const s = composeSchema([journal])
+  s.reminders.onThisDay.table = 'JOURNAL'
+  const { schema } = removeTrackers(s, ['journal'])
+  assert(!schema.reminders, `left ${JSON.stringify(schema.reminders)}`)
+})
+
+check('the menu skips files that are not menu items, and keeps its order', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ps-menu-'))
+  try {
+    for (const f of ['base.json', 'journal.json', 'dreams.json']) copyFileSync(resolve(ROOT, 'trackers', f), join(dir, f))
+    writeFileSync(join(dir, 'workouts.json'), JSON.stringify({ key: 'workouts', name: 'Workouts', operations: ['create'], fields: [] }))
+    writeFileSync(join(dir, 'broken.json'), '{ not json')
+    assert(trackerMenu(dir).map((m) => m.id).join() === 'journal,dreams', trackerMenu(dir).map((m) => m.id).join())
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 check('a valid minimal schema produces no errors', () => {

@@ -43,11 +43,10 @@ git clone <the link> pocket-scribe
 cd pocket-scribe
 npm install
 cp .env.example .env
-cp schema.starter.json schema.json
 ```
 
-`.env` holds your keys, and `schema.json` your own trackers, which you'll edit in
-Step 4. git ignores both: they are yours, and an update never touches them.
+`.env` holds your keys; Step 4 makes `schema.json`, your trackers. git ignores
+both: they are yours, and an update never touches them.
 
 **Check:** `npm test` ends with two `✓ … passed` lines.
 
@@ -114,13 +113,40 @@ The Telegram lines get filled in Step 7, and `WORKER_URL` in Step 5.
 
 ---
 
-## Step 4 — Make the trackers yours
+## Step 4 — Choose your trackers
 
-`schema.json` decides what the system listens for and where it files things.
-The starter has Journal, Dreams, Adventure Learnings, To-Dos and Thoughts. At
-minimum, read each table's **`vocabulary`** and change it to the words you'll
-actually say ("dream log", "todo list"…). Rename or remove trackers freely;
-*Editing the schema* below lists the rules.
+A tracker is a list the system files into: a journal, your to-dos, notes about
+people. Choose any mix of ready-made ones and your own.
+
+**From the menu.** See it with `npm run trackers`:
+
+| | Tracker | What it's for |
+|---|---|---|
+| Suggested | `journal` | Daily entries and gratitudes; a year later, that day's entry comes back |
+| | `todos` | Deadlines, a 9am Telegram digest, ✓ buttons; "I did X" ticks one off |
+| | `thoughts` | Ideas, notes to self, anything worth keeping that isn't a task |
+| Optional | `dreams` | A dream log |
+| | `adventures` | Lessons from trips and events, sent back a month before you go again |
+| | `bucket_list` | Things to do someday, ticked off when they happen |
+| | `people` | What's going on with the people in your life, birthdays, gift ideas |
+| | `recommendations` | Books, shows and places people tell you about, and who said so |
+
+```bash
+npm run trackers -- start --suggested             # the suggested three
+npm run trackers -- start journal todos people    # or exactly the ones you want
+npm run trackers -- add dreams                     # add more any time
+npm run trackers -- remove dreams                  # or take one out
+```
+
+**Your own.** Want something the menu doesn't have, such as workouts, a
+reading log, or symptoms? Describe it to your AI in plain words ("each workout:
+what I did, how long, how it felt") and have it add a tracker to `schema.json`
+following *Editing the schema* below. The menu's trackers are good examples to
+copy from.
+
+Either way, read each tracker's **`vocabulary`** in `schema.json` and change
+it to the words you'll actually say ("dream log", "todo list"…): that's how a
+recording finds its way. Everything here can change later; deploy afterwards.
 
 **Check:** `npm test` still passes; it validates `schema.json`.
 
@@ -347,7 +373,7 @@ npm run deploy:app  # …and the app
 | Polls run but nothing is ever captured; `npm run tail` shows `poll.unhandled` with a 401 | `POCKET_API_KEY` is wrong or revoked | New key in the Pocket app, update `.env`, `npm run secrets` |
 | `npx wrangler whoami` says *OAuth Token* | Wrangler isn't reading this folder's `.env`, so it fell back to an old `wrangler login` | Run commands from this folder; check the `.env` line has no spaces or quotes |
 | `wrangler` refuses to start, mentioning the Node version | Node older than 22 | Install Node 22 or newer |
-| `schema.json not found` | Step 1's `cp schema.starter.json schema.json` was skipped | Run it, or `npm run setup`, which makes it |
+| `schema.json not found` | Step 4 was skipped | `npm run trackers` |
 | `.env has no KV_ID, D1_ID` | Setup hasn't run in this folder | `npm run setup` |
 
 ---

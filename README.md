@@ -59,9 +59,9 @@ Pocket device ──sync──▶ Pocket cloud ──┬── cron poll (2 min)
 | `app/` | the app Worker |
 | `migrations/` | the D1 tables |
 | `schema.json` | your trackers: tables, fields, vocabulary, reminders. Yours: untracked, and in every backup |
-| `schema.starter.json` | the trackers a new install starts from |
+| `trackers/` | the tracker menu a new install chooses from (`npm run trackers`), and the shared base |
 | `wrangler.template.jsonc`, `wrangler.app.template.jsonc` | shared Worker settings; `npm run config` fills in your ids from `.env` to make `wrangler.jsonc` and `wrangler.app.jsonc` (untracked) |
-| `scripts/` | `setup`, `update`, `config`, `secrets`, `telegram-setup`, `backup`, `restore`, and the tests |
+| `scripts/` | `setup`, `trackers`, `update`, `config`, `secrets`, `telegram-setup`, `backup`, `restore`, and the tests |
 
 ## Day to day
 

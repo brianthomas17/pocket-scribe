@@ -1,0 +1,18 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.wrangler/
+.dev.vars
+dist/
+.DS_Store
+worker-configuration.d.ts
+.import/
+backups/
+
+# Yours, not the shared repo's: your trackers, and the configs `npm run config`
+# makes from the templates and .env.
+schema.json
+wrangler.jsonc
+wrangler.app.jsonc
+schema.from-backup.json

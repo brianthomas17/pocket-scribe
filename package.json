@@ -1,0 +1,35 @@
+{
+  "name": "pocket-scribe",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Voice capture from a Pocket recorder, classified by Claude into your own trackers on Cloudflare.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "test": "node scripts/selftest.mjs && node scripts/storetest.mjs",
+    "test:store": "node scripts/storetest.mjs",
+    "dev": "node scripts/config.mjs && wrangler dev",
+    "deploy": "node scripts/config.mjs && wrangler deploy",
+    "tail": "wrangler tail",
+    "typecheck": "tsc --noEmit",
+    "cf-typegen": "wrangler types",
+    "telegram:setup": "node scripts/telegram-setup.mjs",
+    "secrets": "node scripts/secrets.mjs",
+    "deploy:app": "node scripts/config.mjs && wrangler deploy -c wrangler.app.jsonc",
+    "backup": "node scripts/backup.mjs",
+    "restore": "node scripts/restore.mjs",
+    "config": "node scripts/config.mjs",
+    "update": "node scripts/update.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.122.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.116.0"
+  }
+}

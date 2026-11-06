@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The app: read, type and fix entries. Deployed separately from the capture
+  // Worker (wrangler.jsonc) because Cloudflare Access protects a whole Worker,
+  // and the capture Worker's webhooks must stay reachable.
+  //
+  //   npx wrangler deploy -c wrangler.app.jsonc
+  "name": "pocket-scribe-app",
+  "main": "app/index.ts",
+  "account_id": "",
+  "compatibility_date": "2026-08-12",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The same database the capture Worker writes to.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pocket-scribe",
+      "database_id": "",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // ACCESS_TEAM_DOMAIN and ACCESS_AUD identify the Access application in front
+  // of this Worker; without both it refuses every request. They are not
+  // secret — the AUD tag is in every token Access issues — so they live here.
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "",
+    "ACCESS_AUD": ""
+  },
+
+  // The home-screen icons are bundled into the Worker as binary data.
+  "rules": [{ "type": "Data", "globs": ["**/*.png"], "fallthrough": true }],
+
+  "observability": { "enabled": true, "logs": { "head_sampling_rate": 1 } }
+
+  // Secret: ANTHROPIC_API_KEY, for filing a recording from Review.
+}

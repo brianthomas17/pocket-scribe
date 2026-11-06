@@ -1,0 +1,73 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pocket-scribe",
+  "main": "src/index.ts",
+
+  // The template for wrangler.jsonc, which `npm run config` writes (every
+  // deploy runs it) by filling the blanks from your .env. Shared settings live
+  // here, so an update can change them; your ids live only in .env.
+  //
+  // Pinned so a deploy can only ever land in your account.
+  "account_id": "",
+
+  "compatibility_date": "2026-08-12",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Polling is the primary path, not the safety net.
+  //
+  // Pocket's webhook has broken repeatedly, their app shows no delivery log,
+  // and their public API exposes no webhook endpoints at all (/webhooks 404s
+  // with a valid key) — so it cannot be inspected, recreated, or healed from
+  // here. Depending on it means depending on something we can neither observe
+  // nor repair.
+  //
+  // At two minutes the webhook stops mattering: a capture lands about as fast
+  // as it would have, and whether the webhook is alive becomes a detail rather
+  // than the difference between working and silently not.
+  "triggers": {
+    "crons": ["*/2 * * * *"]
+  },
+
+  // Small, fast state: which recordings have been handled, which once-a-day
+  // jobs have run, and which Telegram message asked which question.
+  "kv_namespaces": [
+    { "binding": "STATE", "id": "" }
+  ],
+
+  // Where every record lives (migrations/). The app Worker binds the same
+  // database.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pocket-scribe",
+      "database_id": "",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Nightly backups: every record and edit, one file a night (kept 30 days)
+  // and one a month (kept). `npm run setup` creates the bucket.
+  "r2_buckets": [{ "binding": "BACKUPS", "bucket_name": "pocket-scribe-backups" }],
+
+  // Whisper, for recordings Pocket leaves untranscribed (src/transcribe.ts).
+  // Nothing to create: Workers AI comes with every account.
+  "ai": { "binding": "AI" },
+
+  "vars": {
+    // The morning to-do digest goes out at DIGEST_HOUR (0–23) in this zone.
+    "TIMEZONE": "",
+    "DIGEST_HOUR": "9",
+    // Linked from the digest.
+    "APP_URL": ""
+  },
+
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.01 }
+  }
+
+  // Secrets live in .env and are pushed by `npm run secrets`, never here:
+  //   POCKET_API_KEY, ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
+  //   TELEGRAM_WEBHOOK_SECRET, and optionally POCKET_WEBHOOK_SECRET.
+}

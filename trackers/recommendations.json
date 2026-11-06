@@ -1,6 +1,7 @@
 {
   "about": "Books, shows, restaurants and more that people tell you about, who suggested each, and whether you've tried it.",
   "suggested": false,
+  "order": 8,
   "table": {
     "key": "recommendations",
     "name": "Recommendations",
@@ -8,6 +9,9 @@
     "operations": [
       "create",
       "update"
+    ],
+    "resolveBy": [
+      "Title"
     ],
     "vocabulary": [
       "recommendation",

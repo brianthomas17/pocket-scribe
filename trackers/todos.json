@@ -1,6 +1,7 @@
 {
   "about": "Tasks with deadlines. A 9am Telegram digest of what's overdue or due soon, with a ✓ button on each; say \"I did X\" to tick one off.",
   "suggested": true,
+  "order": 2,
   "table": {
     "key": "todos",
     "name": "To-Dos",

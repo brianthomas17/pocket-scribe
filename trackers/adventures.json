@@ -1,6 +1,7 @@
 {
   "about": "Lessons from trips and events. For one that happens every year, they come back on Telegram a month before you go again.",
   "suggested": false,
+  "order": 5,
   "reminders": {
     "events": {
       "table": "Adventure Learnings",

@@ -277,17 +277,30 @@ export const TRACKERS_DIR = resolve(ROOT, 'trackers')
 export function trackerMenu(dir = TRACKERS_DIR) {
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json') && f !== 'base.json')
-    .map((f) => ({ id: f.slice(0, -5), ...JSON.parse(readFileSync(resolve(dir, f), 'utf8')) }))
-    .sort((a, b) => Number(b.suggested) - Number(a.suggested) || MENU_ORDER.indexOf(a.id) - MENU_ORDER.indexOf(b.id))
+    .flatMap((f) => {
+      let item
+      try {
+        item = JSON.parse(readFileSync(resolve(dir, f), 'utf8'))
+      } catch {
+        return []
+      }
+      // A file in some other shape (a table copied in by hand) is not a menu item.
+      return item?.table?.key && item.table.name ? [{ id: f.slice(0, -5), ...item }] : []
+    })
+    .sort((a, b) => Number(Boolean(b.suggested)) - Number(Boolean(a.suggested)) || (a.order ?? Infinity) - (b.order ?? Infinity) || a.id.localeCompare(b.id))
 }
-const MENU_ORDER = ['journal', 'todos', 'thoughts', 'dreams', 'adventures', 'bucket_list', 'people', 'recommendations']
 
 const isSystem = (t) => !t.operations?.length
 
-/** schema.json with these menu trackers added (any already there are left alone). */
+/**
+ * schema.json with these menu trackers added (any already there are left
+ * alone). A reminder of a kind the schema already has is kept as it was, and
+ * reported in `skippedReminders`: there is one of each kind.
+ */
 export function addTrackers(schema, items) {
   const out = structuredClone(schema)
   const added = []
+  const skippedReminders = []
   for (const item of items) {
     if (out.tables.some((t) => t.key === item.table.key)) continue
     // Trackers first, system tables last: the order the app lists them.
@@ -296,10 +309,11 @@ export function addTrackers(schema, items) {
     for (const [kind, config] of Object.entries(item.reminders ?? {})) {
       out.reminders ??= {}
       if (!out.reminders[kind]) out.reminders[kind] = structuredClone(config)
+      else skippedReminders.push({ tracker: item.table.name, kind, keptFor: out.reminders[kind].table })
     }
     added.push(item.table.name)
   }
-  return { schema: out, added }
+  return { schema: out, added, skippedReminders }
 }
 
 /** A fresh schema.json from the base and these menu trackers. */
@@ -314,7 +328,8 @@ export function removeTrackers(schema, keys) {
   const gone = out.tables.filter((t) => keys.includes(t.key) && !isSystem(t))
   out.tables = out.tables.filter((t) => !gone.includes(t))
   for (const [kind, config] of Object.entries(out.reminders ?? {})) {
-    if (gone.some((t) => t.key === config.table || t.name === config.table)) delete out.reminders[kind]
+    const ref = String(config?.table ?? '').toLowerCase()
+    if (gone.some((t) => t.key.toLowerCase() === ref || t.name.toLowerCase() === ref)) delete out.reminders[kind]
   }
   if (out.reminders && !Object.keys(out.reminders).length) delete out.reminders
   return { schema: out, removed: gone.map((t) => t.name) }

@@ -1,6 +1,7 @@
 {
   "about": "Things to do someday, ticked off when they happen.",
   "suggested": false,
+  "order": 6,
   "table": {
     "key": "bucket_list",
     "name": "Bucket List",

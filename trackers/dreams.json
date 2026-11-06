@@ -1,6 +1,7 @@
 {
   "about": "A dream log, one entry per dream.",
   "suggested": false,
+  "order": 4,
   "table": {
     "key": "dreams",
     "name": "Dreams",

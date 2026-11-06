@@ -13,23 +13,32 @@
  * (SETUP.md, "Editing the schema"). Deploy afterwards to use the change.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { addTrackers, composeSchema, removeTrackers, trackerMenu, validateSchema, ROOT } from './lib.mjs'
 
 const SCHEMA = resolve(ROOT, 'schema.json')
 const [command = 'list', ...args] = process.argv.slice(2)
 const menu = trackerMenu()
-const current = existsSync(SCHEMA) ? JSON.parse(readFileSync(SCHEMA, 'utf8')) : null
-const has = (item) => current?.tables.some((t) => t.key === item.table.key)
 
 function fail(message) {
   console.error(`\n✗ ${message}\n`)
   process.exit(1)
 }
 
-function pick(ids) {
-  if (args.includes('--suggested')) return menu.filter((m) => m.suggested)
+let current = null
+if (existsSync(SCHEMA)) {
+  try {
+    current = JSON.parse(readFileSync(SCHEMA, 'utf8'))
+  } catch (err) {
+    fail(`schema.json is not valid JSON, so nothing was changed: ${err.message}\n  Fix it by hand (or ask your AI), then run this again.`)
+  }
+}
+const has = (item) => current?.tables?.some((t) => t.key === item.table.key)
+
+function pick(ids, { suggested = false } = {}) {
+  if (suggested && args.includes('--suggested')) return menu.filter((m) => m.suggested)
+  if (args.includes('--suggested')) fail('--suggested only goes with `start`. Name the trackers instead.')
   const unknown = ids.filter((id) => !menu.some((m) => m.id === id))
   if (unknown.length) fail(`No tracker called ${unknown.join(', ')}. The menu: ${menu.map((m) => m.id).join(', ')}`)
   if (!ids.length) fail(`Name at least one: ${menu.map((m) => m.id).join(', ')}`)
@@ -59,16 +68,25 @@ if (command === 'list') {
   if (current && !args.includes('--force')) {
     fail('schema.json already exists. Use `add` and `remove` to change it, or add --force to replace it (entries already filed stay in the database).')
   }
-  const items = pick(ids)
+  const items = pick(ids, { suggested: true })
+  if (current) {
+    // schema.json is not tracked by git, so this copy is the only way back.
+    const copy = resolve(ROOT, `schema.backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`)
+    copyFileSync(SCHEMA, copy)
+    console.log(`· your previous schema.json is saved as ${copy.slice(ROOT.length + 1)}`)
+  }
   save(composeSchema(items), `schema.json started with ${items.map((m) => m.table.name).join(', ')}`)
 } else if (command === 'add') {
   if (!current) fail('No schema.json yet. Use `start` first.')
-  const { schema, added } = addTrackers(current, pick(ids))
+  const { schema, added, skippedReminders } = addTrackers(current, pick(ids))
   if (!added.length) {
     console.log('Already there; nothing changed.')
     process.exit(0)
   }
   save(schema, `added ${added.join(', ')}`)
+  for (const s of skippedReminders) {
+    console.log(`! ${s.tracker}'s "${s.kind}" reminder was not added: yours already goes to ${s.keptFor}, and there is one of each. Point reminders.${s.kind} at ${s.tracker} in schema.json to switch.`)
+  }
 } else if (command === 'remove') {
   if (!current) fail('No schema.json yet.')
   const keys = pick(ids).map((m) => m.table.key)

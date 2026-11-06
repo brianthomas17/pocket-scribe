@@ -1,6 +1,7 @@
 {
   "about": "Anything worth keeping that isn't a task: ideas, notes to self, thinking out loud.",
   "suggested": true,
+  "order": 3,
   "table": {
     "key": "thoughts",
     "name": "Thoughts & Ideas",

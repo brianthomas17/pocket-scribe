@@ -1,6 +1,7 @@
 {
   "about": "Daily entries and gratitudes, one row a day. A year later, that day's entry comes back on Telegram.",
   "suggested": true,
+  "order": 1,
   "reminders": {
     "onThisDay": {
       "table": "journal",

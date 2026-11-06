@@ -1,6 +1,7 @@
 {
   "about": "Notes about the people in your life: what you talked about, what's going on with them, birthdays, gift ideas. Say \"note about Sam: …\".",
   "suggested": false,
+  "order": 7,
   "table": {
     "key": "people",
     "name": "People",
@@ -37,7 +38,7 @@
     "conventions": [
       "One row per person. A note about someone already here is appended to their Notes, never a new row. Match the name as they said it, allowing for nicknames and speech-to-text mangling; when two people could match, ask rather than guess.",
       "Each appended note starts with the recording's date, then what they said in their words, tightened: '2026-11-06: Sam started the new job at the clinic, loves it'.",
-      "Birthday is a date; when no year is said, use the year 2000. Set it only when they say it.",
+      "Birthday is written as they said it: 'June 2', or 'June 2, 1990' when they give the year. Never invent a year. Set it only when they say it.",
       "Gift ideas go one per line in Gift Ideas. When adding to a person who already has some, include the existing ones: an update replaces the field wholesale.",
       "One recording can be about several people: 'Note about Sam and Alex: they're moving to Denver' appends to both."
     ],
@@ -54,7 +55,8 @@
       },
       {
         "name": "Birthday",
-        "type": "date"
+        "type": "singleLineText",
+        "description": "Month and day, plus the year only when it was said."
       },
       {
         "name": "Gift Ideas",

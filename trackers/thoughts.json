@@ -1,0 +1,54 @@
+{
+  "about": "Anything worth keeping that isn't a task: ideas, notes to self, thinking out loud.",
+  "suggested": true,
+  "table": {
+    "key": "thoughts",
+    "name": "Thoughts & Ideas",
+    "description": "Loose thoughts and ideas, captured out loud.",
+    "operations": [
+      "create"
+    ],
+    "vocabulary": [
+      "thoughts",
+      "thought",
+      "random thoughts",
+      "random thought",
+      "idea",
+      "ideas",
+      "thinking out loud",
+      "note to self"
+    ],
+    "roles": {
+      "title": "Thought",
+      "notes": "Notes",
+      "date": "Date"
+    },
+    "conventions": [
+      "Thought is the thought itself in one line - their words, tightened, not a label about the thought. 'Onboarding should start before the contract is signed', not 'Idea about onboarding'.",
+      "For a short thought, Thought alone is the whole record; leave Notes empty rather than restating it.",
+      "For a longer one, Thought is the line that would remind them of it later, and Notes carries the reasoning as they said it.",
+      "This is the catch-all. Only route here when nothing more specific fits - a thought about an upcoming trip belongs in Adventure Learnings, a thing to do belongs in To-Dos."
+    ],
+    "fields": [
+      {
+        "name": "Thought",
+        "type": "singleLineText",
+        "description": "PRIMARY. The thought in one line."
+      },
+      {
+        "name": "Notes",
+        "type": "multilineText",
+        "description": "The fuller version, when there is one."
+      },
+      {
+        "name": "Date",
+        "type": "date",
+        "options": {
+          "dateFormat": {
+            "name": "iso"
+          }
+        }
+      }
+    ]
+  }
+}

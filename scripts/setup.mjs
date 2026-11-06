@@ -12,10 +12,10 @@
  * (`npm run config`).
  */
 
-import { copyFileSync, existsSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { loadDotEnv, loadSchema, setEnv, validateSchema, writeConfigs, configValues, ROOT } from './lib.mjs'
+import { composeSchema, loadDotEnv, loadSchema, setEnv, trackerMenu, validateSchema, writeConfigs, configValues, ROOT } from './lib.mjs'
 
 const CHECK = process.argv.includes('--check')
 const unknown = process.argv.slice(2).filter((a) => a !== '--check')
@@ -68,11 +68,13 @@ if (!token || !account) {
 }
 if (!owners.length) fail('OWNER_EMAIL is not set in .env', 'Put the email you use to sign in to Cloudflare: it is who the app lets in.')
 ok(`account ${account}, app sign-in for ${owners.join(', ')}, time zone ${timezone}`)
-// schema.json is yours, not the shared repo's: a new install starts from the starter.
+// schema.json is yours, not the shared repo's. Normally SETUP.md's Step 4 has
+// made it from the menu by now; if not, start with the suggested trackers.
 if (!existsSync(resolve(ROOT, 'schema.json'))) {
-  if (CHECK) fail('schema.json not found', 'Without --check, setup creates it from schema.starter.json.')
-  copyFileSync(resolve(ROOT, 'schema.starter.json'), resolve(ROOT, 'schema.json'))
-  ok('created schema.json from schema.starter.json — your trackers, to change as you like')
+  if (CHECK) fail('schema.json not found', 'Choose your trackers first: npm run trackers (SETUP.md, Step 4).')
+  const suggested = trackerMenu().filter((m) => m.suggested)
+  writeFileSync(resolve(ROOT, 'schema.json'), JSON.stringify(composeSchema(suggested), null, 2) + '\n')
+  ok(`created schema.json with the suggested trackers (${suggested.map((m) => m.table.name).join(', ')}); add more with npm run trackers`)
 }
 const errors = validateSchema(loadSchema())
 if (errors.length) fail('schema.json has problems', errors.map((e) => `  · ${e}`).join('\n'))

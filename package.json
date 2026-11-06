@@ -22,7 +22,8 @@
     "backup": "node scripts/backup.mjs",
     "restore": "node scripts/restore.mjs",
     "config": "node scripts/config.mjs",
-    "update": "node scripts/update.mjs"
+    "update": "node scripts/update.mjs",
+    "trackers": "node scripts/trackers.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

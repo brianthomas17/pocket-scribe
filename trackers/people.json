@@ -1,0 +1,65 @@
+{
+  "about": "Notes about the people in your life: what you talked about, what's going on with them, birthdays, gift ideas. Say \"note about Sam: …\".",
+  "suggested": false,
+  "table": {
+    "key": "people",
+    "name": "People",
+    "description": "Notes about the people in your life: what you talked about, what is going on with them, birthdays, gift ideas.",
+    "operations": [
+      "create",
+      "append",
+      "update"
+    ],
+    "vocabulary": [
+      "note about",
+      "notes about",
+      "people notes",
+      "person note",
+      "remember about",
+      "birthday",
+      "gift idea",
+      "gift ideas for"
+    ],
+    "appendTarget": "Notes",
+    "resolveBy": [
+      "Name"
+    ],
+    "roles": {
+      "title": "Name",
+      "notes": "Notes"
+    },
+    "candidateFields": [
+      "Name",
+      "Birthday",
+      "Gift Ideas"
+    ],
+    "candidateLimit": 200,
+    "conventions": [
+      "One row per person. A note about someone already here is appended to their Notes, never a new row. Match the name as they said it, allowing for nicknames and speech-to-text mangling; when two people could match, ask rather than guess.",
+      "Each appended note starts with the recording's date, then what they said in their words, tightened: '2026-11-06: Sam started the new job at the clinic, loves it'.",
+      "Birthday is a date; when no year is said, use the year 2000. Set it only when they say it.",
+      "Gift ideas go one per line in Gift Ideas. When adding to a person who already has some, include the existing ones: an update replaces the field wholesale.",
+      "One recording can be about several people: 'Note about Sam and Alex: they're moving to Denver' appends to both."
+    ],
+    "fields": [
+      {
+        "name": "Name",
+        "type": "singleLineText",
+        "description": "PRIMARY. How they refer to the person."
+      },
+      {
+        "name": "Notes",
+        "type": "richText",
+        "description": "Dated notes that grow over time."
+      },
+      {
+        "name": "Birthday",
+        "type": "date"
+      },
+      {
+        "name": "Gift Ideas",
+        "type": "multilineText"
+      }
+    ]
+  }
+}

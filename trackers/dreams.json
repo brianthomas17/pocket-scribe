@@ -1,0 +1,33 @@
+{
+  "about": "A dream log, one entry per dream.",
+  "suggested": false,
+  "table": {
+    "key": "dreams",
+    "name": "Dreams",
+    "operations": [
+      "create"
+    ],
+    "vocabulary": [
+      "dream log",
+      "dreamlog",
+      "dream",
+      "dreams",
+      "dream journal"
+    ],
+    "roles": {
+      "body": "Dream",
+      "date": "Date"
+    },
+    "fields": [
+      {
+        "name": "Date",
+        "type": "date",
+        "description": "PRIMARY."
+      },
+      {
+        "name": "Dream",
+        "type": "richText"
+      }
+    ]
+  }
+}

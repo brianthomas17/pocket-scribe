@@ -1,0 +1,103 @@
+{
+  "about": "Books, shows, restaurants and more that people tell you about, who suggested each, and whether you've tried it.",
+  "suggested": false,
+  "table": {
+    "key": "recommendations",
+    "name": "Recommendations",
+    "description": "Books, shows, restaurants and anything else someone recommended, and who it came from.",
+    "operations": [
+      "create",
+      "update"
+    ],
+    "vocabulary": [
+      "recommendation",
+      "recommendations",
+      "recommended",
+      "someone recommended",
+      "check out",
+      "reading list",
+      "watch list",
+      "to watch",
+      "to read",
+      "finally watched",
+      "finally read",
+      "finally tried"
+    ],
+    "roles": {
+      "title": "Title",
+      "notes": "Notes",
+      "date": "Date"
+    },
+    "candidateFields": [
+      "Title",
+      "Kind",
+      "Tried"
+    ],
+    "candidateLimit": 200,
+    "lifecycleFields": [
+      "Tried"
+    ],
+    "conventions": [
+      "Title is the thing itself as it is known: the book's title, the restaurant's name. Not 'Book Sam recommended'.",
+      "Recommended By is who suggested it, as they named them; empty when they found it themselves.",
+      "One recording can hold several: 'Sam recommended Severance and the book Piranesi' is two creates.",
+      "When they say they tried one ('finally watched Severance, it was great'), update that existing row with Tried = true and put what they thought in Notes. Never add a second copy of something already listed.",
+      "Date is when it was recommended: the recording's date, set when the row is created. An update never changes it."
+    ],
+    "fields": [
+      {
+        "name": "Title",
+        "type": "singleLineText",
+        "description": "PRIMARY. The thing itself."
+      },
+      {
+        "name": "Kind",
+        "type": "singleSelect",
+        "options": {
+          "choices": [
+            {
+              "name": "Book"
+            },
+            {
+              "name": "Show"
+            },
+            {
+              "name": "Movie"
+            },
+            {
+              "name": "Music"
+            },
+            {
+              "name": "Podcast"
+            },
+            {
+              "name": "Restaurant"
+            },
+            {
+              "name": "Place"
+            },
+            {
+              "name": "Other"
+            }
+          ]
+        }
+      },
+      {
+        "name": "Recommended By",
+        "type": "singleLineText"
+      },
+      {
+        "name": "Notes",
+        "type": "multilineText"
+      },
+      {
+        "name": "Tried",
+        "type": "checkbox"
+      },
+      {
+        "name": "Date",
+        "type": "date"
+      }
+    ]
+  }
+}

@@ -14,7 +14,7 @@ small app on your phone.
 
 Everything is yours: your Cloudflare account, your keys, your data. There is no
 service in the middle. Setting it up for someone else means they run their own
-copy: see **[SETUP.md](SETUP.md)**. Updates come with `npm run update`, and never
+copy: see **[SETUP.md](SETUP.md)**, or open this folder in a coding agent (Claude Code, Cursor, Codex…) and ask it to follow SETUP.md with you; [AGENTS.md](AGENTS.md) tells it how. Updates come with `npm run update`, and never
 touch your trackers.
 
 ## What you get
